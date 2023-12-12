@@ -11,17 +11,17 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-const Movies = () => {
+const Movies = ({ navigation }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        "https://my-json-server.typicode.com/horizon-code-academy/fake-movies-api/movies"
-      );
-      setData(response.data);
+      const response = await axios.get("https://dummyjson.com/products");
+
+      setData(response.data.products);
       setLoading(false);
     } catch (error) {
       console.log("Error ", error);
@@ -40,6 +40,67 @@ const Movies = () => {
       </View>
     );
   }
+  const filteredPopular = data.filter((product) => product.brand === "Apple");
+  const filteredMost = data.filter(
+    (product) => product.category === "groceries"
+  );
+  const filteredTrending = data.filter(
+    (product) => product.category === "skincare"
+  );
+
+  const renderHorizontalItems = (getdata, imageStyle) => {
+    return (
+      <FlatList
+        horizontal={true}
+        style={styles.flatList}
+        showsHorizontalScrollIndicator={false}
+        data={getdata}
+        keyExtractor={(item) => item.Title}
+        renderItem={({ item }) => (
+          <View key={item.id} style={{ marginTop: 10 }}>
+            <TouchableOpacity
+              style={styles.moviesContainer}
+              onPress={() =>
+                navigation.navigate("ProductsDetails", { item: item })
+              }
+            >
+              <View>
+                <Image
+                  source={{
+                    uri: item.thumbnail,
+                  }}
+                  resizeMode="cover"
+                  style={{
+                    width: imageStyle ? 250 : 150,
+                    height: imageStyle ? 150 : 200,
+                  }}
+                />
+              </View>
+              <View style={{ width: "100%" }}>
+                <Text
+                  style={styles.moviesTitle}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item.title}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                  }}
+                >
+                  <Text style={styles.moviesSubTitle}>{item.price}</Text>
+                  <Text style={[styles.moviesSubTitle, { marginLeft: 1 }]}>
+                    ,{item.rating}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#122727" }}>
@@ -48,7 +109,15 @@ const Movies = () => {
           <View style={styles.moviesHeaderContainer}>
             <Text style={styles.moviesHeader}>Popular</Text>
             <View style={styles.moviesViewAllHeader}>
-              <Text style={styles.moviesViewAll}>See all</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("ViewAllScreen", {
+                    item: filteredPopular,
+                  });
+                }}
+              >
+                <Text style={styles.moviesViewAll}>See all</Text>
+              </TouchableOpacity>
               <FontAwesome
                 size={16}
                 name="angle-right"
@@ -57,54 +126,19 @@ const Movies = () => {
               />
             </View>
           </View>
-          <FlatList
-            horizontal={true}
-            style={styles.flatList}
-            showsHorizontalScrollIndicator={false}
-            data={data}
-            keyExtractor={(item) => item.Title}
-            renderItem={({ item }) => (
-              <View style={styles.moviesContainer}>
-                <View>
-                  <Image
-                    source={{
-                      uri: item.Poster,
-                    }}
-                    resizeMode="cover"
-                    style={{
-                      width: 150,
-                      height: 200,
-                    }}
-                  />
-                </View>
-                <View style={{ width: "100%" }}>
-                  <Text
-                    style={styles.moviesTitle}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.Title}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                    }}
-                  >
-                    <Text style={styles.moviesSubTitle}>{item.Year}</Text>
-                    <Text style={[styles.moviesSubTitle, { marginLeft: 1 }]}>
-                      ,{item.Runtime}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-          />
+          {renderHorizontalItems(filteredPopular, false)}
         </View>
         <View style={{ marginTop: 40 }}>
           <View style={styles.moviesHeaderContainer}>
             <Text style={styles.moviesHeader}>Playing In Theatres</Text>
             <View style={styles.moviesViewAllHeader}>
-              <Text style={styles.moviesViewAll}>See all</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("ViewAllScreen", { item: filteredMost });
+                }}
+              >
+                <Text style={styles.moviesViewAll}>See all</Text>
+              </TouchableOpacity>
               <FontAwesome
                 size={16}
                 name="angle-right"
@@ -113,58 +147,21 @@ const Movies = () => {
               />
             </View>
           </View>
-          <FlatList
-            horizontal={true}
-            style={styles.flatList}
-            showsHorizontalScrollIndicator={false}
-            data={data}
-            keyExtractor={(item) => item.Title}
-            renderItem={({ item }) => (
-              <View style={styles.moviesContainer}>
-                <View>
-                  <Image
-                    source={{
-                      uri: item.Poster,
-                    }}
-                    resizeMode="cover"
-                    style={{
-                      width: 200,
-                      height: 150,
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    width: "100%",
-                  }}
-                >
-                  <Text
-                    style={[styles.moviesTitle, { width: "95%" }]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.Title}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                    }}
-                  >
-                    <Text style={styles.moviesSubTitle}>{item.Year}</Text>
-                    <Text style={[styles.moviesSubTitle, { marginLeft: 1 }]}>
-                      ,{item.Runtime}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-          />
+          {renderHorizontalItems(filteredMost, true)}
         </View>
         <View style={{ marginTop: 40, paddingBottom: 40 }}>
           <View style={styles.moviesHeaderContainer}>
             <Text style={styles.moviesHeader}>Trending</Text>
             <View style={styles.moviesViewAllHeader}>
-              <Text style={styles.moviesViewAll}>See all</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("ViewAllScreen", {
+                    item: filteredTrending,
+                  });
+                }}
+              >
+                <Text style={styles.moviesViewAll}>See all</Text>
+              </TouchableOpacity>
               <FontAwesome
                 size={16}
                 name="angle-right"
@@ -173,54 +170,12 @@ const Movies = () => {
               />
             </View>
           </View>
-          <FlatList
-            horizontal={true}
-            style={styles.flatList}
-            showsHorizontalScrollIndicator={false}
-            data={data}
-            keyExtractor={(item) => item.Title}
-            renderItem={({ item }) => (
-              <View style={styles.moviesContainer}>
-                <View>
-                  <Image
-                    source={{
-                      uri: item.Poster,
-                    }}
-                    resizeMode="cover"
-                    style={{
-                      width: 150,
-                      height: 200,
-                    }}
-                  />
-                </View>
-                <View style={{}}>
-                  <Text
-                    style={styles.moviesTitle}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.Title}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                    }}
-                  >
-                    <Text style={styles.moviesSubTitle}>{item.Year}</Text>
-                    <Text style={[styles.moviesSubTitle, { marginLeft: 1 }]}>
-                      ,{item.Runtime}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-          />
+          {renderHorizontalItems(filteredTrending, false)}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
 export default Movies;
 const styles = StyleSheet.create({
   moviesHeaderContainer: {
